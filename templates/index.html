@@ -127,7 +127,7 @@
 
       try {
         // Отправляем POST-запрос на сервер
-        const response = await fetch('http://localhost:3000/addNote', {
+        const response = await fetch('api/addNote', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json' // Указываем, что отправляем JSON
@@ -168,7 +168,7 @@ window.onload = () => fetchNotes();
       if (endDate) data.dateEnd = endDate;
 
       try {
-        const response = await fetch('http://localhost:3000/notes', {
+        const response = await fetch('api/notes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -212,7 +212,7 @@ window.onload = () => fetchNotes();
         noteElement.innerHTML = `
           <h3>${note.title} ${st}</h3>
           <p>${note.text}</p>
-          <a href="http://localhost:3000/edit_note/${note.id}" >Взять в работу</a>
+          <a href="api/edit_note/${note.id}" >Взять в работу</a>
         `;
         if (note.answer){
           noteElement.innerHTML += `<p>Ответ: ${note.answer}</p>`
@@ -225,7 +225,7 @@ window.onload = () => fetchNotes();
 
     document.getElementById('sendButton').addEventListener('click', async () => {
             try {
-                const response = await fetch('http://localhost:3000/cancel_notes', {
+                const response = await fetch('api/cancel_notes', {
                     method: 'GET',
                 });
                 fetchNotes();

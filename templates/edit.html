@@ -29,7 +29,7 @@
         // Используем noteId для запроса данных с сервера
         async function fetchNoteDetails(id) {
         try {
-            const response = await fetch(`/get_note/${id}`);
+            const response = await fetch(`api/get_note/${id}`);
             if (!response.ok) {
             throw new Error('Ошибка при загрузке данных');
             }
@@ -63,7 +63,7 @@
 
       try {
         // Отправляем POST-запрос на сервер
-        const response = await fetch('http://localhost:3000/reply', {
+        const response = await fetch('api/reply', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json' // Указываем, что отправляем JSON

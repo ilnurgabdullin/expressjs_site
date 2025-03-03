@@ -12,7 +12,7 @@ const pool = new Pool({
 
 const app = express();
 app.use(express.json());
-app.use(cookieParser('1'));
+app.use(cookieParser('secret'));
 
 
 async function authMiddleware(req, res, next) {

@@ -100,7 +100,7 @@
 
         try {
             // Отправляем запрос на сервер для регистрации
-            const response = await fetch('http://localhost:3000/register/', {
+            const response = await fetch('api/register/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -113,7 +113,7 @@
 
             // Если регистрация прошла успешно, перенаправляем на страницу авторизации
             if (response.ok) {
-                window.location.href = 'http://localhost:3000/login/';
+                window.location.href = 'api/login/';
             } else {
                 const errorData = await response.json();
                 errorMessage.textContent = errorData.detail || 'Ошибка регистрации';
@@ -134,7 +134,7 @@
 
         try {
             // Отправляем запрос на сервер для авторизации
-            const response = await fetch('http://localhost:3000/login/', {
+            const response = await fetch('api/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -147,7 +147,7 @@
 
             // Если авторизация прошла успешно, перенаправляем на страницу профиля
             if (response.ok) {
-                window.location.href = 'http://localhost:3000/';
+                window.location.href = '/';
             } else {
                 const errorData = await response.json();
                 errorMessage.textContent = errorData.detail || 'Ошибка авторизации';
