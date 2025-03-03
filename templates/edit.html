@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="title"></div>
+    <p id="message"></p>
+        <div>
+          <a href="/">Вернуться назад</a>
+          <form id="replyForm">
+            <label for="message">Текст ответа:</label>
+            <textarea id="reply" name="message" rows="5" required></textarea>
+            <select name="status" id="status">
+                <option value="work">В работе</option>
+                <option value="new">Новое</option>
+                <option value="cancel">Отменено</option>
+                <option value="compl">Завершено</option>
+            </select>
+            <button type="submit">Отправить</button>
+          </form>
+        </div>
+    <script>
+    // Извлекаем id из URL
+        const noteId = window.location.pathname.split('/').pop();
+
+        // Используем noteId для запроса данных с сервера
+        async function fetchNoteDetails(id) {
+        try {
+            const response = await fetch(`/get_note/${id}`);
+            if (!response.ok) {
+            throw new Error('Ошибка при загрузке данных');
+            }
+            const note = await response.json();
+            console.log('Данные заметки:', note);
+            // Заполняем форму или отображаем данные
+            document.getElementById('title').textContent = note.title;
+            document.getElementById('message').textContent = note.text;
+            document.getElementById('reply').textContent = note.answer;
+            document.getElementById('status').value = note.status;
+        } catch (error) {
+            console.error('Ошибка:', error);
+        }
+        }
+
+        window.onload = () => fetchNoteDetails(noteId);
+
+        document.getElementById('replyForm').addEventListener('submit', async function (event) {
+      event.preventDefault(); // Предотвращаем стандартную отправку формы
+
+      // Получаем данные из формы
+      var e = document.getElementById("status");
+      const message = document.getElementById('reply').value;
+
+      // Создаем объект с данными для отправки
+      const data = {
+        status: e.value,
+        text: message,
+        noteId : noteId
+      };
+
+      try {
+        // Отправляем POST-запрос на сервер
+        const response = await fetch('http://localhost:3000/reply', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json' // Указываем, что отправляем JSON
+          },
+          body: JSON.stringify(data) // Преобразуем данные в JSON
+        });
+
+        // Проверяем статус ответа
+        if (!response.ok) {
+          throw new Error('Ошибка при отправке данных');
+        }
+
+        // Обрабатываем успешный ответ
+        const result = await response.json();
+        console.log('Ответ сервера:', result);
+
+        // Очищаем форму после успешной отправки
+        // document.getElementById('replyForm').reset();
+
+        // Уведомление пользователя
+        // alert('Ваше обращение успешно отправлено!');
+        // fetchNotes();
+      } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка при отправке обращения');
+      }
+    });
+
+
+
+    </script>
+</body>
+</html>

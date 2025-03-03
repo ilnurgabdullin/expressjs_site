@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .notes-section {
+      width: 70%;
+    }
+
+    .feedback-section {
+      width: 25%;
+    }
+
+    .note {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    .note h3 {
+      margin: 0;
+    }
+
+    .note p {
+      margin: 5px 0;
+    }
+
+    .feedback-form {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+
+    .feedback-form h2 {
+      margin-top: 0;
+    }
+
+    .feedback-form label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .feedback-form input,
+    .feedback-form textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .feedback-form button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .feedback-form button:hover {
+      background-color: #0056b3;
+    }
+  </style> 
+  </head>
+<body>
+  <div class="notes-section">
+    <h1>Список заметок</h1>
+    <button id="sendButton" style="height: 30px;" type="submit">Отменить все в работе</button>
+    <div id="notes-container" class="main-content"></div>
+  </div>
+
+  <!-- Форма фильтрации -->
+  <form id="dateForm">
+    <label for="startDateInput">От:</label>
+    <input type="date" id="startDateInput" name="dateInput">
+    <label for="endDateInput">До:</label>
+    <input type="date" id="endDateInput" name="dateInput">
+    <button type="submit">Запросить</button>
+    <button type="button" onclick="clearFilter()">Сбросить</button>
+  </form>
+  <!-- Форма добавления заметки -->
+  <div class="feedback-section">
+    <div class="feedback-form">
+      <h2>Оставить обращение</h2>
+      <form id="feedbackForm">
+        <label for="title">Заголовок:</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="message">Текст обращения:</label>
+        <textarea id="message" name="message" rows="5" required></textarea>
+
+        <button type="submit">Отправить</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Обработчик формы фильтрации
+    document.getElementById('dateForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await fetchNotes();
+    });
+
+    document.getElementById('feedbackForm').addEventListener('submit', async function (event) {
+      event.preventDefault(); // Предотвращаем стандартную отправку формы
+
+      // Получаем данные из формы
+      const title = document.getElementById('title').value;
+      const message = document.getElementById('message').value;
+
+      // Создаем объект с данными для отправки
+      const data = {
+        title: title,
+        text: message
+      };
+
+      try {
+        // Отправляем POST-запрос на сервер
+        const response = await fetch('http://localhost:3000/addNote', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json' // Указываем, что отправляем JSON
+          },
+          body: JSON.stringify(data) // Преобразуем данные в JSON
+        });
+
+        // Проверяем статус ответа
+        if (!response.ok) {
+          throw new Error('Ошибка при отправке данных');
+        }
+
+        // Обрабатываем успешный ответ
+        const result = await response.json();
+        console.log('Ответ сервера:', result);
+
+        // Очищаем форму после успешной отправки
+        document.getElementById('feedbackForm').reset();
+
+        // Уведомление пользователя
+        // alert('Ваше обращение успешно отправлено!');
+        fetchNotes();
+      } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Произошла ошибка при отправке обращения');
+      }
+    });
+
+window.onload = () => fetchNotes();
+
+    // Основная функция загрузки заметок
+    async function fetchNotes() {
+      const data = {};
+      const startDate = document.getElementById('startDateInput').value;
+      const endDate = document.getElementById('endDateInput').value;
+
+      if (startDate) data.dateStart = startDate;
+      if (endDate) data.dateEnd = endDate;
+
+      try {
+        const response = await fetch('http://localhost:3000/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) throw new Error('Ошибка загрузки');
+        const notes = await response.json();
+        displayNotes(notes);
+      } catch (error) {
+        console.error('Ошибка:', error);
+        alert('Не удалось загрузить заметки');
+      }
+    }
+
+    // Функция сброса фильтра
+    function clearFilter() {
+      document.getElementById('dateForm').reset();
+      fetchNotes();
+    }
+    function displayNotes(notes) {
+      const container = document.getElementById('notes-container');
+      container.innerHTML = ''; // Очищаем контейнер
+
+      notes.forEach(note => {
+        const noteElement = document.createElement('div');
+        switch (note.status){
+          case 'work': 
+            st = '<font color="yellow"><p>В работе</p></font>'
+            break;
+          case 'new': 
+            st = '<font color="blue"><p>Новое</p></font>'
+            break;
+          case 'compl': 
+            st = '<font color="green"><p>Завершено</p></font>'
+            break;
+          case 'cancel': 
+            st = '<font color="red"><p>Отменено</p></font>'
+            break;
+        }
+        noteElement.classList.add('note');
+        noteElement.innerHTML = `
+          <h3>${note.title} ${st}</h3>
+          <p>${note.text}</p>
+          <a href="http://localhost:3000/edit_note/${note.id}" >Взять в работу</a>
+        `;
+        if (note.answer){
+          noteElement.innerHTML += `<p>Ответ: ${note.answer}</p>`
+        }
+        noteElement.innerHTML += `${note.date.toString().split("T")[0]}`
+        container.appendChild(noteElement);
+      });
+    }
+
+
+    document.getElementById('sendButton').addEventListener('click', async () => {
+            try {
+                const response = await fetch('http://localhost:3000/cancel_notes', {
+                    method: 'GET',
+                });
+                fetchNotes();
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при отправке запроса');
+            }
+        });
+    // Инициализация при загрузке страницы
+    window.onload = fetchNotes;
+  </script>
+</body>
+</html>
